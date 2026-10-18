@@ -1,0 +1,34 @@
+name: Exaroton Scheduler
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 min (UTC); the script itself checks the 8-11 PM Eastern window
+  workflow_dispatch:         # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write            # needed so it can save scheduler_state.json
+
+concurrency:
+  group: exaroton
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Run scheduler
+        run: python exaroton_scheduler.py
+        env:
+          EXAROTON_TOKEN: ${{ secrets.EXAROTON_TOKEN }}
+          EXAROTON_SERVER_ID: ${{ secrets.EXAROTON_SERVER_ID }}
+      - name: Save state
+        run: |
+          git config user.name "scheduler-bot"
+          git config user.email "scheduler-bot@users.noreply.github.com"
+          git add scheduler_state.json
+          git diff --staged --quiet || (git commit -m "update scheduler state" && git push)
