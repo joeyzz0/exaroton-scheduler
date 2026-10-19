@@ -1,4 +1,5 @@
 {
-  "script_started": false,
-  "last_status": 0
+  "script_started": true,
+  "last_status": 0,
+  "last_action_ts": 1792368185.9478693
 }
